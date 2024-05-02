@@ -4,6 +4,7 @@ import json
 import hashlib
 import os
 import subprocess
+import sys
 
 # =================================
 # SET REQUIRED VARS HERE
@@ -86,6 +87,8 @@ print("\nDone.")
 jvm_args = "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar " + build_jar + " --nogui"
 full_cmd = '"' + java_path + '"' + " -Xms" + str(ram_size) + "G -Xmx" + str(ram_size) + "G " + jvm_args
 
-if os.name == "nt":
+if sys.platform == "win32":
     os.system("CLS")
+elif sys.platform == "linux":
+    os.system("clear")
 subprocess.run(full_cmd, shell=True)
