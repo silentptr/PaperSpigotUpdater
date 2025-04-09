@@ -11,11 +11,11 @@ import sys
 # =================================
 
 # path to java (doesn't always have to be full path)
-java_path = "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.3.9-hotspot\\bin\\java.exe"
+java_path = "java"
 # amount of ram for server in gigabytes
-ram_size = 4
+ram_size = 8
 # version of minecraft
-version = "1.20.6"
+version = "1.21.4"
 
 # =================================
 # =================================
@@ -30,7 +30,7 @@ except HTTPError as err:
         print("There is not a Paper Spigot release for that version.")
     else:
         print("An error occured while checking version.")
-    exit()
+    exit(1)
 
 data_json = json.loads(response.read())
 builds = data_json["builds"]
@@ -62,7 +62,7 @@ if os.path.exists(build_jar) == False:
         urlretrieve(url + "/" + str(build_num) + "/downloads/" + build_jar, build_jar)
     except:
         print("Failed to downloar JAR file.")
-        exit()
+        exit(1)
 else:
     print("JAR file already downloaded.")
 
@@ -78,13 +78,12 @@ with open(build_jar, "rb") as file:
             sha.update(data)
 if build_hash != sha.hexdigest():
     print("Checksum does not match.")
-    exit()
+    exit(1)
 
 print("\nDone.")
 
-# run it now
-
-jvm_args = "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar " + build_jar + " --nogui"
+over12G = ram_size > 12
+jvm_args = "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent={0} -XX:G1MaxNewSizePercent={1} -XX:G1HeapRegionSize={2} -XX:G1ReservePercent={3} -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent={4} -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar {5} --nogui".format("40" if over12G else "30", "50" if over12G else "40", "16M" if over12G else "8M", "15" if over12G else "20", "20" if over12G else "15", build_jar)
 full_cmd = '"' + java_path + '"' + " -Xms" + str(ram_size) + "G -Xmx" + str(ram_size) + "G " + jvm_args
 
 if sys.platform == "win32":
